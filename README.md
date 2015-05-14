@@ -1,6 +1,6 @@
 # Happy Caching Proxy
 
-This is a transparent http proxy which caches ruby gems as they pass through. Directly inspired by (Angry Caching Proxy)[https://github.com/epeli/angry-caching-proxy]
+This is a transparent http proxy which caches ruby gems as they pass through. Directly inspired by [Angry Caching Proxy](https://github.com/epeli/angry-caching-proxy)
 
 ## Usage
 ```
