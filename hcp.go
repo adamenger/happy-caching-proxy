@@ -20,6 +20,7 @@ var (
 	verbose         = flag.Bool("verbose", false, "enable verbose mode")
 )
 
+// Here's where we do the heavy lifting of the file downloading
 func fileDownloader(file string, url string) {
 
 	filename := get_filename(file)
@@ -38,6 +39,7 @@ func fileDownloader(file string, url string) {
 	}
 }
 
+// Check to see if cache directory exists, if not, create it
 func initialize_cache(directory string) {
 	if _, err := os.Stat(directory); os.IsNotExist(err) {
 		log.Printf("Cache directory does not exist.\n")
@@ -51,13 +53,15 @@ func initialize_cache(directory string) {
 	}
 }
 
+// return just the filename of the gem
 func get_filename(path string) string {
 	sl := strings.Split(path, "/")
 	filename := sl[len(sl)-1]
-
 	return filename
 }
 
+// TODO there has to be a better way to do this
+//resorting to this because the stdlib insists on returning ports on SSL
 func generate_url(scheme string, host string, path string) string {
 	if scheme == "https" {
 		host, _, err := net.SplitHostPort(host)
@@ -70,6 +74,8 @@ func generate_url(scheme string, host string, path string) string {
 	}
 }
 
+// check our cache, if not, call the downloader
+// returns file object which the proxy will serve back
 func check_or_cache(gem string, url string) *os.File {
 	gem_file := get_filename(gem)
 	full_gem_path := fmt.Sprintf("%s/%s", *cache_directory, gem_file)
@@ -88,6 +94,7 @@ func check_or_cache(gem string, url string) *os.File {
 	}
 }
 
+// This is a wrapper around the std http.Response, here we pump the os.File Writer into the body of the response
 func fileResponse(r *http.Request, contentType string, status int, body *os.File) *http.Response {
 	resp := &http.Response{}
 	resp.Request = r
@@ -95,11 +102,11 @@ func fileResponse(r *http.Request, contentType string, status int, body *os.File
 	resp.Header = make(http.Header)
 	resp.Header.Add("Content-Type", contentType)
 	resp.StatusCode = status
-	//resp.ContentLength = int64(len(buf))
 	resp.Body = ioutil.NopCloser(body)
 	return resp
 }
 
+// where the magic happens
 func main() {
 
 	// Parse all cli flags
@@ -113,22 +120,22 @@ func main() {
 	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
 	proxy.Verbose = *verbose
 
-	// Currently only match debian and gem files
-	r, err := regexp.Compile("^.*\\.(deb|gem)$")
+	// Currently only match gem files
+	r, err := regexp.Compile("^.*\\.(gem)$")
 	if err != nil {
-		log.Printf("There is a problem with your regex.\n")
+		log.Fatal("There is a problem with your regex.\n")
 		return
 	}
 
+	// add a conditional to only serve requests that match *.gem
 	proxy.OnRequest(goproxy.UrlMatches(r)).DoFunc(
 		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-			// Downgrade the connection
-
 			gem_url := generate_url(r.URL.Scheme, r.URL.Host, r.URL.Path)
 			gem_file := check_or_cache(r.URL.Path, gem_url)
 			return r, fileResponse(r, "application/octet", 200, gem_file)
 		})
 
+	// To protect and serve!
 	log.Printf("Happy Caching Proxy listening on: localhost:%s \n", *listen)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", *listen), proxy))
 }
