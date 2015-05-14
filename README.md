@@ -1,6 +1,6 @@
 # Happy Caching Proxy
 
-This is a transparent http proxy which caches ruby gems as they pass through.
+This is a transparent http proxy which caches ruby gems as they pass through. Directly inspired by (Angry Caching Proxy)[https://github.com/epeli/angry-caching-proxy]
 
 ## Usage
 ```
@@ -17,3 +17,4 @@ $ cd happy-caching-proxy
 $ go build hcp.go
 $ ./hcp.go -dir="gems" -listen=9999 -verbose
 ```
+
