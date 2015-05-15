@@ -120,7 +120,7 @@ func main() {
 	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
 	proxy.Verbose = *verbose
 
-	// Currently only match gem files
+	// Currently only match gem and deb files
 	r, err := regexp.Compile("^.*\\.(gem|deb)$")
 	if err != nil {
 		log.Fatal("There is a problem with your regex.\n")
