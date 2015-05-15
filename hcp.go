@@ -127,7 +127,7 @@ func main() {
 		return
 	}
 
-	// add a conditional to only serve requests that match *.gem
+	// add a conditional to only serve requests that match .gem and .deb
 	proxy.OnRequest(goproxy.UrlMatches(r)).DoFunc(
 		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 			gem_url := generate_url(r.URL.Scheme, r.URL.Host, r.URL.Path)
