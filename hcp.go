@@ -49,7 +49,7 @@ func initialize_cache(directory string) {
 	} else {
 		gem_count, _ := ioutil.ReadDir(*cache_directory)
 		log.Printf("Cache directory initialized: %s \n", directory)
-		log.Printf("%d gems in the cache \n", len(gem_count))
+		log.Printf("%d packages in the cache \n", len(gem_count))
 	}
 }
 
@@ -66,7 +66,7 @@ func generate_url(scheme string, host string, path string) string {
 	if scheme == "https" {
 		host, _, err := net.SplitHostPort(host)
 		if err != nil {
-			log.Fatal("Fatal error generating gem url!")
+			log.Fatal("Fatal error generating package url!")
 		}
 		return fmt.Sprintf("%s://%s%s", scheme, host, path)
 	} else {
@@ -81,14 +81,14 @@ func check_or_cache(gem string, url string) *os.File {
 	full_gem_path := fmt.Sprintf("%s/%s", *cache_directory, gem_file)
 
 	if _, err := os.Stat(full_gem_path); os.IsNotExist(err) {
-		log.Printf("Cache MISS for gem: %s\n", full_gem_path)
+		log.Printf("Cache MISS for package: %s\n", full_gem_path)
 		log.Printf("Downloading: %s\n", gem)
 		fileDownloader(gem, url)
 
 		gem_file, _ := os.Open(full_gem_path)
 		return gem_file
 	} else {
-		log.Printf("Cache HIT for gem: %s\n", full_gem_path)
+		log.Printf("Cache HIT for package: %s\n", full_gem_path)
 		gem_file, _ := os.Open(full_gem_path)
 		return gem_file
 	}
@@ -121,7 +121,7 @@ func main() {
 	proxy.Verbose = *verbose
 
 	// Currently only match gem files
-	r, err := regexp.Compile("^.*\\.(gem)$")
+	r, err := regexp.Compile("^.*\\.(gem|deb)$")
 	if err != nil {
 		log.Fatal("There is a problem with your regex.\n")
 		return
